@@ -570,6 +570,12 @@ func (rpcapi *IPFSConnectorRPCAPI) SwarmPeers(ctx context.Context, in struct{}, 
 	return nil
 }
 
+// BlockStream runs IPFSConnector.BlockStream().
+func (rpcapi *IPFSConnectorRPCAPI) BlockStream(ctx context.Context, in <-chan api.NodeWithMeta, out chan<- struct{}) error {
+	close(out)
+	return rpcapi.ipfs.BlockStream(ctx, in)
+}
+
 // BlockPut runs IPFSConnector.BlockPut().
 func (rpcapi *IPFSConnectorRPCAPI) BlockPut(ctx context.Context, in api.NodeWithMeta, out *struct{}) error {
 	return rpcapi.ipfs.BlockPut(ctx, in)

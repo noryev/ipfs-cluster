@@ -93,8 +93,19 @@ func (dgs *DAGService) Finalize(ctx context.Context, dataRoot cid.Cid) (cid.Cid,
 	}
 
 	// PutDAG to ourselves
-	err = adder.NewBlockAdder(dgs.rpcClient, []peer.ID{""}).AddMany(ctx, clusterDAGNodes)
-	if err != nil {
+	blocks := make(chan api.NodeWithMeta, len(clusterDAGNodes))
+	for _, n := range clusterDAGNodes {
+		blocks <- adder.IpldNodeToNodeWithMeta(n)
+	}
+	close(blocks)
+	bs := adder.NewBlockStreamer(ctx, dgs.rpcClient, []peer.ID{""}, blocks)
+	select {
+	case <-ctx.Done():
+		return dataRoot, ctx.Err()
+	case <-bs.Done():
+	}
+
+	if err := bs.Err(); err != nil {
 		return dataRoot, err
 	}
 
@@ -189,7 +200,7 @@ func (dgs *DAGService) ingestBlock(ctx context.Context, n ipld.Node) error {
 	// add the block to it if it fits and return
 	if shard.Size()+size < shard.Limit() {
 		shard.AddLink(ctx, n.Cid(), size)
-		return dgs.currentShard.ba.Add(ctx, n)
+		return dgs.currentShard.sendBlock(ctx, n)
 	}
 
 	logger.Debugf("shard %d full: block: %d. shard: %d. limit: %d",

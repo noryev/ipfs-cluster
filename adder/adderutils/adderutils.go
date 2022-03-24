@@ -38,7 +38,7 @@ func AddMultipartHTTPHandler(
 	if params.Shard {
 		dags = sharding.New(rpc, params, output)
 	} else {
-		dags = single.New(rpc, params, params.Local)
+		dags = single.New(ctx, rpc, params, params.Local)
 	}
 
 	if outputTransform == nil {

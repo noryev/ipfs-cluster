@@ -97,6 +97,8 @@ type IPFSConnector interface {
 	Resolve(context.Context, string) (cid.Cid, error)
 	// BlockPut directly adds a block of data to the IPFS repo.
 	BlockPut(context.Context, api.NodeWithMeta) error
+	// BlockStream adds a stream of blocks to IPFS.
+	BlockStream(context.Context, <-chan api.NodeWithMeta) error
 	// BlockGet retrieves the raw data of an IPFS block.
 	BlockGet(context.Context, cid.Cid) ([]byte, error)
 }

@@ -584,6 +584,11 @@ func (mock *mockIPFSConnector) RepoStat(ctx context.Context, in struct{}, out *a
 	return nil
 }
 
+func (mock *mockIPFSConnector) BlockStream(ctx context.Context, in <-chan api.NodeWithMeta, out chan<- struct{}) error {
+	close(out)
+	return nil
+}
+
 func (mock *mockIPFSConnector) BlockPut(ctx context.Context, in api.NodeWithMeta, out *struct{}) error {
 	return nil
 }
